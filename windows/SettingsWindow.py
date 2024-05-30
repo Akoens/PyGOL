@@ -1,8 +1,13 @@
 import tkinter as tk
-import windows.Window as Window
+
+from windows.Window import Window
+from windows.Pages import Pages
 
 
-class SettingsWindow(Window.Window):
+class SettingsWindow(Window):
+    """
+    The SettingsWindow allows the user to edit different settings of the game and the UI.
+    """
 
     SPACER_HEIGHT = 20
 
@@ -23,7 +28,12 @@ class SettingsWindow(Window.Window):
 
         self.setup()
 
-    def setup(self):
+    def setup(self) -> None:
+        """
+        Define the different widgets for the settings page.
+        :return: None
+        """
+
         # Settings
         self.settings_frame = tk.Frame(master=self, bg=self.controller.BACKGROUND_COLOR, padx=20, pady=20)
 
@@ -105,6 +115,7 @@ class SettingsWindow(Window.Window):
         self.delay_scale.set(self.controller.delay)
         self.delay_scale.pack()
 
+        # Show frame
         self.settings_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # Menu Buttons
@@ -120,7 +131,11 @@ class SettingsWindow(Window.Window):
         self.return_button.pack(side=tk.RIGHT)
         self.button_frame.pack(side=tk.BOTTOM, fill=tk.BOTH)
 
-    def apply(self):
+    def apply(self) -> None:
+        """
+        Apply the settings that have been altered.
+        :return: None
+        """
         height = self.grid_height_scale.get()
         width = self.grid_width_scale.get()
 
@@ -133,12 +148,11 @@ class SettingsWindow(Window.Window):
         self.controller.random_level = self.random_level_scale.get()
         self.controller.delay = self.delay_scale.get()
 
-        self.controller.page_frames.get("GameWindow").update()
+        self.controller.page_frames.get(Pages.GameWindow).update()
 
-    def back(self):
+    def back(self) -> None:
         self.apply()
-        self.controller.show_frame("GameWindow")
+        self.controller.show_page(Pages.GameWindow)
 
-    @staticmethod
-    def name():
-        return "SettingsWindow"
+    def name(self) -> Pages:
+        return Pages.SettingsWindow

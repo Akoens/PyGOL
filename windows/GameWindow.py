@@ -1,12 +1,17 @@
-import tkinter as tk
-import windows.Window as Window
 import time
 import random
 import math
+import tkinter as tk
+
+from windows.Window import Window
+from windows.Pages import Pages
 
 
-class GameWindow(Window.Window):
-    def __init__(self, master, controller):
+class GameWindow(Window):
+    """
+    This class manages the game state and UI Elements for the game.
+    """
+    def __init__(self, master, controller) -> None:
         super().__init__(master=master)
         self.master = master
         self.controller = controller
@@ -29,8 +34,11 @@ class GameWindow(Window.Window):
 
         self.setup()
 
-    def setup(self):
-
+    def setup(self) -> None:
+        """
+        Configure the different UI elements
+        :return: None
+        """
         self.config(bg=self.controller.BACKGROUND_COLOR)
 
         self.canvas = tk.Canvas(master=self, bg="#333", width=self.controller.SCREEN_WIDTH,
@@ -66,22 +74,33 @@ class GameWindow(Window.Window):
         self.settings_button.pack(side=tk.RIGHT)
         self.button_frame.pack(fill=tk.BOTH)
 
+        # Call update to render the grid
         self.update()
 
-    def create_grid(self):
+    def create_grid(self) -> None:
+        """
+        Creates the lines for the grid.
+        :return: None
+        """
+        # Create horizontal lines of the grid
         start_width = self.controller.tile_width
-        for idxC in range(self.controller.grid_width-1):
+        for _ in range(self.controller.grid_width - 1):
             self.canvas.create_line(start_width, 0, start_width, self.controller.SCREEN_HEIGHT,
                                     fill="#000", width=1)
             start_width += self.controller.tile_width
 
+        # Create vertical lines of the grid
         start_height = self.controller.tile_height
-        for idxR in range(self.controller.grid_height-1):
+        for _ in range(self.controller.grid_height - 1):
             self.canvas.create_line(0, start_height, self.controller.SCREEN_WIDTH, start_height,
                                     fill="#000", width=1)
             start_height += self.controller.tile_height
 
-    def random(self):
+    def random(self) -> None:
+        """
+        Fills the grid with cells on random positions.
+        :return: None
+        """
         for r in range(self.controller.grid_width - 1):
             for c in range(self.controller.grid_height - 1):
                 ri = random.randint(0, self.controller.random_level)
@@ -89,26 +108,43 @@ class GameWindow(Window.Window):
                     self.cells.update({(c, r): 1})
         self.update()
 
-    def clear(self):
+    def clear(self) -> None:
+        """
+        Clears all the cells and updates the UI.
+        :return: None
+        """
         self.cells.clear()
         self.update()
 
-    def settings(self):
+    def settings(self) -> None:
+        """
+        Stop the game and show the Settings page
+        :return: None
+        """
         self.stop()
-        self.controller.show_frame("SettingsWindow")
+        self.controller.show_page(Pages.SettingsWindow)
 
-    def update(self):
+    def update(self) -> None:
+        """
+        Updates the UI for the cells.
+        :return: None
+        """
         self.canvas.delete('all')
         self.create_grid()
 
         for cell in self.cells.keys():
             tile_start_width = cell[1] * self.controller.tile_width
             tile_start_height = cell[0] * self.controller.tile_height
-            self.canvas.create_rectangle(tile_start_width, tile_start_height, tile_start_width + self.controller.tile_width,
+            self.canvas.create_rectangle(tile_start_width, tile_start_height,
+                                         tile_start_width + self.controller.tile_width,
                                          tile_start_height + self.controller.tile_height, outline="#000",
                                          fill=self.controller.PRIME_COLOR, width=1)
 
-    def step(self):
+    def step(self) -> None:
+        """
+        Updates the game by one step.
+        :return: None
+        """
         if len(self.cells) <= 0:
             return
         start = time.perf_counter()
@@ -145,26 +181,43 @@ class GameWindow(Window.Window):
         print(f'Finished in {round(end - start, 9)} second(s).\n'
               f'; Before Update {round(bfu - start, 9)} second(s).', end="\n\n")
 
-    def auto_step(self):
+    def auto_step(self) -> None:
+        """
+        Automatically update the game state according to the set delay.
+        :return: None
+        """
         self.step()
         self._job = self.after(self.controller.delay, self.auto_step)
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start the auto-step and change button to stop.
+        :return: None
+        """
         self.auto_step()
         self.auto_step_button.configure(text="Stop", command=self.stop)
         self.step_button.configure(state="disabled")
 
-    def cancel(self):
+    def cancel(self) -> None:
         if self._job is not None:
             self.after_cancel(self._job)
             self._job = None
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop the auto-step and change button to start.
+        :return: None
+        """
         self.cancel()
         self.auto_step_button.configure(text="Start", command=self.start)
         self.step_button.configure(state="normal")
 
-    def callback(self, event):
+    def callback(self, event) -> None:
+        """
+        Add or remove cells from where the user clicked on the grid.
+        :param event:
+        :return: None
+        """
         print(f"Clicked at: x{event.x}, y{event.y}")
         ylo = math.floor(event.x / self.controller.tile_width)
         xlo = math.floor(event.y / self.controller.tile_height)
@@ -175,6 +228,5 @@ class GameWindow(Window.Window):
             self.cells.update({(xlo, ylo): 1})
         self.update()
 
-    @staticmethod
-    def name():
-        return "GameWindow"
+    def name(self) -> Pages:
+        return Pages.GameWindow
